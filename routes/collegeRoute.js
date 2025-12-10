@@ -3,57 +3,63 @@ import { College } from '../models/collegeModel.js';
 
 const router = express.Router();
 
-// Route to create new user
-router.post('/postdata', async (req, res) => {
+const generateCollegeCode = (name) => {
+    return name
+        .replace(/,\s*/g, '-')
+        .replace(/\.-/g, '-')
+        .replace(/\s*-\s*/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/,/g, '-')
+        .replace(/\./g, '-')
+        .replace(/--/g, '-')
+        .toLowerCase();
+};
+
+router.get('/', async (req, res) => {
     try {
-        const mainData = await College.create(req.body);
-        res.status(201).json(mainData);
+        const colleges = await College.find().sort({ createdAt: -1 });
+        res.status(200).json(colleges);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error fetching colleges:', error);
+        res.status(500).json({ error: 'Server error while fetching colleges' });
     }
 });
 
-// Utility function for generating college code
-const generateCollegeCode = (name) => {
-    return name
-        .replace(/,\s*/g, '-')      // Replace comma followed by spaces with a dash
-        .replace(/\.-/g, '-')       // Replace dot followed by dash with a dash
-        .replace(/\s*-\s*/g, '-')   // Replace " - " with "-"
-        .replace(/\s+/g, '-')       // Replace spaces with "-"
-        .replace(/,/g, '-')         // Replace any remaining commas with dashes
-        .replace(/\./g, '-')        // Replace any dots with dashes
-        .replace(/--/g, '-')        // Replace double dashes with a single dash
-        .toLowerCase();             // Convert to lowercase
-};
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const college = await College.findById(id);
 
-// Route to create new college with generated college code
-// router.post('/postcollege', async (req, res) => {
-//     try {
-//         const { collegeName } = req.body;
+        if (!college) {
+            return res.status(404).json({ error: 'College not found' });
+        }
 
-//         if (!collegeName) {
-//             return res.status(400).json({ error: 'College name is required' });
-//         }
+        res.status(200).json(college);
+    } catch (error) {
+        console.error('Error fetching college:', error);
+        
+        if (error.name === 'CastError') {
+            return res.status(400).json({ error: 'Invalid college ID format' });
+        }
+        
+        res.status(500).json({ error: 'Server error while fetching college' });
+    }
+});
 
-//         const collegeCode = generateCollegeCode(collegeName);
-
-//         const newCollege = await College.create({ collegeName, collegeCode });
-
-//         res.status(201).json(newCollege);
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Server error' });
-//     }
-// });
-
-// Route to create multiple colleges with generated college codes
-router.post('/postcolleges', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { colleges } = req.body;
 
-        if (!Array.isArray(colleges) || colleges.length === 0) {
-            return res.status(400).json({ error: 'Colleges array is required' });
+        if (!colleges) {
+            return res.status(400).json({ error: 'Colleges field is required' });
+        }
+
+        if (!Array.isArray(colleges)) {
+            return res.status(400).json({ error: 'Colleges must be an array' });
+        }
+
+        if (colleges.length === 0) {
+            return res.status(400).json({ error: 'Colleges array cannot be empty' });
         }
 
         const collegeEntries = colleges.map(collegeName => {
@@ -65,19 +71,109 @@ router.post('/postcolleges', async (req, res) => {
 
         res.status(201).json(savedColleges);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error creating colleges:', error);
+
+        if (error.code === 11000) {
+            return res.status(409).json({ 
+                error: 'College already exists',
+                details: error.keyValue 
+            });
+        }
+
+        res.status(500).json({ error: 'Server error while creating colleges' });
     }
 });
 
-// Route to get all user data
-router.get('/getdata', async (req, res) => {
+router.put('/:id', async (req, res) => {
     try {
-        const mainData = await College.find();
-        res.status(200).json(mainData);
+        const { id } = req.params;
+        const { collegeName, oldCollegeName, newCollegeName } = req.body;
+
+        const updatedName = newCollegeName || collegeName;
+
+        if (!updatedName) {
+            return res.status(400).json({ 
+                error: 'College name is required (use collegeName or newCollegeName)' 
+            });
+        }
+
+        const collegeCode = generateCollegeCode(updatedName);
+
+        const updatedCollege = await College.findByIdAndUpdate(
+            id,
+            { 
+                collegeName: updatedName, 
+                collegeCode,
+                updatedAt: Date.now()
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedCollege) {
+            return res.status(404).json({ error: 'College not found' });
+        }
+
+        res.status(200).json(updatedCollege);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error updating college:', error);
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({ error: 'Invalid college ID format' });
+        }
+
+        if (error.code === 11000) {
+            return res.status(409).json({ 
+                error: 'College name already exists',
+                details: error.keyValue 
+            });
+        }
+
+        res.status(500).json({ error: 'Server error while updating college' });
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const deletedCollege = await College.findByIdAndDelete(id);
+
+        if (!deletedCollege) {
+            return res.status(404).json({ error: 'College not found' });
+        }
+
+        res.status(200).json({ 
+            message: 'College deleted successfully',
+            deletedCollege 
+        });
+    } catch (error) {
+        console.error('Error deleting college:', error);
+
+        if (error.name === 'CastError') {
+            return res.status(400).json({ error: 'Invalid college ID format' });
+        }
+
+        res.status(500).json({ error: 'Server error while deleting college' });
+    }
+});
+
+router.delete('/code/:collegeCode', async (req, res) => {
+    try {
+        const { collegeCode } = req.params;
+        
+        const deletedCollege = await College.findOneAndDelete({ collegeCode });
+
+        if (!deletedCollege) {
+            return res.status(404).json({ error: 'College not found' });
+        }
+
+        res.status(200).json({ 
+            message: 'College deleted successfully',
+            deletedCollege 
+        });
+    } catch (error) {
+        console.error('Error deleting college:', error);
+        res.status(500).json({ error: 'Server error while deleting college' });
     }
 });
 
