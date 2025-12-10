@@ -2,7 +2,6 @@ import express from "express";
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// import { PORT, URI } from "./config.js";
 import mongoose from 'mongoose';
 
 import collegeRoute from './routes/collegeRoute.js'
@@ -25,10 +24,9 @@ mongoose
     .connect(process.env.URI)
     .then(() => {
         console.log('App connected to database.');
-        app.listen(process.env.PORT || 5555, () => {
-            console.log(`App is listening to Port: ${process.env.PORT}`);
-        });
     })
     .catch((error) => {
-        console.log(error);
+        console.log('Database connection error:', error);
     });
+
+export default app;
