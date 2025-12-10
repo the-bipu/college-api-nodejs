@@ -14,6 +14,19 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
+app.get('/favicon.png', (req, res) => {
+    try {
+        const faviconPath = path.join(__dirname, 'public', 'favicon.png');
+        const favicon = readFileSync(faviconPath);
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.send(favicon);
+    } catch (error) {
+        console.error('Favicon error:', error);
+        res.status(404).send('Favicon not found');
+    }
+});
+
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
