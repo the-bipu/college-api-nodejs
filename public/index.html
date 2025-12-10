@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College API Documentation</title>
+    <meta name="description" content="API for fetching data of colleges from India">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="header">
+                <div class="title">College API Documentation</div>
+                <p class="subtitle">Welcome to the College API by the-bipu. Here we've tried to list all the colleges of India with this API.</p>
+            </div>
+
+            <div class="card">
+                <h3>Get a Random College.</h3>
+                <p>Use this endpoint to retrieve a random college.</p>
+                <p class="font-semibold">Example Request:</p>
+                <div class="code-block">
+                    <span class="method">GET</span>
+                    <span id="random-endpoint"></span>
+                </div>
+                <p class="font-semibold">Example Response:</p>
+                <pre>{
+  "college": "Sample College Name",
+  "location": "Sample Location",
+  "state": "Sample State"
+}</pre>
+            </div>
+
+            <div class="card">
+                <h3>Get Colleges with First Letter.</h3>
+                <p>Use this endpoint to retrieve a list of colleges with same starting letter.</p>
+                <p class="font-semibold">Example Request:</p>
+                <div class="code-block">
+                    <span class="method">GET</span>
+                    <span id="letter-endpoint"></span>
+                </div>
+                <p class="font-semibold">Example Response:</p>
+                <pre>[
+  {
+    "college": "College Starting with Z",
+    "location": "Location",
+    "state": "State"
+  }
+]</pre>
+            </div>
+
+            <div class="card">
+                <h3>Get all Colleges.</h3>
+                <p>Use this endpoint to retrieve a list of available colleges.</p>
+                <p class="font-semibold">Example Request:</p>
+                <div class="code-block">
+                    <span class="method">GET</span>
+                    <span id="all-endpoint"></span>
+                </div>
+                <p class="font-semibold">Example Response:</p>
+                <pre>[
+  {
+    "college": "College Name 1",
+    "location": "Location 1",
+    "state": "State 1"
+  },
+  {
+    "college": "College Name 2",
+    "location": "Location 2",
+    "state": "State 2"
+  }
+]</pre>
+            </div>
+
+            <div class="footer">
+                Copyright © <a href="https://github.com/the-bipu/college-api-nextjs" target="_blank">the-bipu</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+        document.getElementById('random-endpoint').textContent = `${baseUrl}/api/random`;
+        document.getElementById('letter-endpoint').textContent = `${baseUrl}/api/colleges?letter=z`;
+        document.getElementById('all-endpoint').textContent = `${baseUrl}/api/college`;
+    </script>
+</body>
+</html>
