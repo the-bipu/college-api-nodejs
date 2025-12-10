@@ -1,199 +1,22 @@
 import express from "express";
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';  // Add this import
 import { PORT, URI } from "./config.js";
 import mongoose from 'mongoose';
 
 import collegeRoute from './routes/collegeRoute.js'
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 app.use(express.json());
-
 app.use(cors());
-
 app.use(express.static('public'));
 
 app.get('/', (request, response) => {
-    const baseUrl = `${request.protocol}://${request.get('host')}`;
-
-    const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>College API Documentation</title>
-        <meta name="description" content="API for fetching data of colleges from India">
-        <link rel="icon" type="image/png" href="/favicon.png">
-
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                background-color: #f2f2f2;
-            }
-            .container {
-                width: 100%;
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-            }
-            .content {
-                width: 100%;
-                max-width: 1200px;
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-            .header {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
-            .title {
-                font-size: 30px;
-                font-weight: bold;
-                color: #333333;
-            }
-            .subtitle {
-                font-size: 18px;
-                color: #555;
-            }
-            .card {
-                background: white;
-                padding: 24px;
-                border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .card h3 {
-                color: #ff7f50;
-                font-size: 24px;
-                font-weight: bold;
-                margin-bottom: 12px;
-            }
-            .card p {
-                color: #888;
-                margin-bottom: 8px;
-            }
-            .card p.font-semibold {
-                font-weight: 600;
-            }
-            .code-block {
-                background: #f2f2f2;
-                border-radius: 4px;
-                padding: 12px 16px;
-                border: 1px solid #ddd;
-                display: flex;
-                gap: 16px;
-                margin-bottom: 8px;
-                font-family: 'Courier New', monospace;
-                font-size: 14px;
-            }
-            .method {
-                color: #228b22;
-                font-weight: bold;
-            }
-            pre {
-                background: #f2f2f2;
-                border-radius: 4px;
-                padding: 12px 16px;
-                border: 1px solid #ddd;
-                font-family: 'Courier New', monospace;
-                font-size: 13px;
-                overflow-x: auto;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-            }
-            .footer {
-                margin-top: 8px;
-                color: #666;
-            }
-            .footer a {
-                color: #ff7f50;
-                text-decoration: underline;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="content">
-                <div class="header">
-                    <div class="title">College API Documentation</div>
-                    <p class="subtitle">Welcome to the College API by the-bipu. Here we've tried to list all the colleges of India with this API.</p>
-                </div>
-
-                <div class="card">
-                    <h3>Get a Random College.</h3>
-                    <p>Use this endpoint to retrieve a random college.</p>
-                    <p class="font-semibold">Example Request:</p>
-                    <div class="code-block">
-                        <span class="method">GET</span>
-                        <span>${baseUrl}/api/random</span>
-                    </div>
-                    <p class="font-semibold">Example Response:</p>
-                    <pre>{
-  "college": "Sample College Name",
-  "location": "Sample Location",
-  "state": "Sample State"
-}</pre>
-                </div>
-
-                <div class="card">
-                    <h3>Get Colleges with First Letter.</h3>
-                    <p>Use this endpoint to retrieve a list of colleges with same starting letter.</p>
-                    <p class="font-semibold">Example Request:</p>
-                    <div class="code-block">
-                        <span class="method">GET</span>
-                        <span>${baseUrl}/api/colleges?letter=z</span>
-                    </div>
-                    <p class="font-semibold">Example Response:</p>
-                    <pre>[
-  {
-    "college": "College Starting with Z",
-    "location": "Location",
-    "state": "State"
-  }
-]</pre>
-                </div>
-
-                <div class="card">
-                    <h3>Get all Colleges.</h3>
-                    <p>Use this endpoint to retrieve a list of available colleges.</p>
-                    <p class="font-semibold">Example Request:</p>
-                    <div class="code-block">
-                        <span class="method">GET</span>
-                        <span>${baseUrl}/api/college</span>
-                    </div>
-                    <p class="font-semibold">Example Response:</p>
-                    <pre>[
-  {
-    "college": "College Name 1",
-    "location": "Location 1",
-    "state": "State 1"
-  },
-  {
-    "college": "College Name 2",
-    "location": "Location 2",
-    "state": "State 2"
-  }
-]</pre>
-                </div>
-
-                <div class="footer">
-                    Copyright © <a href="https://github.com/the-bipu/college-api-nextjs" target="_blank">the-bipu</a>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
-
-    return response.status(200).send(html);
+    response.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.use('/college', collegeRoute);
